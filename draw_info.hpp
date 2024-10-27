@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
-#include "../transform/transform.hpp"
+#include "sbpt_generated_includes.hpp"
 
 class IndexedVertexPositions {
   public:
