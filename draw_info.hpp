@@ -30,8 +30,8 @@ class IVPSolidColor {
 class IVPTextured {
   public:
     IVPTextured(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
-                std::vector<glm::vec2> texture_coordinates)
-        : indices(indices), xyz_positions(xyz_positions), texture_coordinates(texture_coordinates) {};
+                std::vector<glm::vec2> texture_coordinates, const std::string &texture = "")
+        : indices(indices), xyz_positions(xyz_positions), texture_coordinates(texture_coordinates), texture(texture) {};
     Transform transform;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
