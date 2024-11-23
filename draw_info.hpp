@@ -39,4 +39,20 @@ class IVPTextured {
     std::string texture;
 };
 
+// with normals
+class IVPNTextured {
+  public:
+    IVPNTextured(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
+                 std::vector<glm::vec3> normals, std::vector<glm::vec2> texture_coordinates,
+                 const std::string &texture = "")
+        : indices(indices), xyz_positions(xyz_positions), normals(normals), texture_coordinates(texture_coordinates),
+          texture(texture) {};
+    Transform transform;
+    std::vector<unsigned int> indices;
+    std::vector<glm::vec3> xyz_positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texture_coordinates;
+    std::string texture;
+};
+
 #endif // DRAW_INFO_HPP
