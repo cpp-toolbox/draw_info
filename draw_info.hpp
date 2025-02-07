@@ -6,6 +6,8 @@
 #include <vector>
 #include "sbpt_generated_includes.hpp"
 
+namespace draw_info {
+
 class IndexedVertexPositions {
   public:
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions)
@@ -97,5 +99,15 @@ class IVPNTexturePacked {
     int packed_texture_bounding_box_index;
     std::string texture_path;
 };
+
+IndexedVertexPositions extract_indexed_vertex_positions(const IVPTextured &ivp_textured);
+IndexedVertexPositions extract_indexed_vertex_positions(const IVPTexturePacked &ivp_texture_packed);
+
+std::vector<IndexedVertexPositions>
+extract_indexed_vertex_positions_vector(const std::vector<IVPTextured> &ivp_textured_vector);
+std::vector<IndexedVertexPositions>
+extract_indexed_vertex_positions_vector(const std::vector<IVPTexturePacked> &ivp_texture_packed_vector);
+
+} // namespace draw_info
 
 #endif // DRAW_INFO_HPP
