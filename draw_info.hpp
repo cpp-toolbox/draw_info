@@ -68,6 +68,7 @@ class IVPTexturePacked {
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
           packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture) {};
     Transform transform;
+    int id = UniqueIDGenerator::generate();
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> original_texture_coordinates;
