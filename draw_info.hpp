@@ -78,6 +78,14 @@ class IVPTexturePacked {
     std::string texture_path;
 };
 
+class IVPTPModel {
+  public:
+    IVPTPModel() {}
+    IVPTPModel(std::vector<IVPTexturePacked> ivptp) : ivptp(std::move(ivptp)) {}
+    std::vector<IVPTexturePacked> ivptp;
+    Transform transform;
+};
+
 class IVPNTexturePacked {
   public:
     IVPNTexturePacked(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
