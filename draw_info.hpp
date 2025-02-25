@@ -10,6 +10,7 @@ namespace draw_info {
 
 class IndexedVertexPositions {
   public:
+    IndexedVertexPositions() {};
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions)
         : indices(indices), xyz_positions(xyz_positions) {};
     Transform transform;
