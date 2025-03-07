@@ -8,7 +8,7 @@
 
 namespace draw_info {
 
-class IndexedVertexPositions {
+class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() {};
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions)
@@ -18,33 +18,39 @@ class IndexedVertexPositions {
     std::vector<glm::vec3> xyz_positions;
 };
 
-class IVPSolidColor {
+class IVPSolidColor { // IVPSC
   public:
+    IVPSolidColor() {};
     IVPSolidColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
-                  std::vector<glm::vec3> rgb_colors)
-        : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors) {};
+                  std::vector<glm::vec3> rgb_colors, int id = GlobalUIDGenerator::get_id())
+        : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id) {};
+
+    // TODO: remove
     Transform transform;
+    int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> texture_coordinates;
     std::vector<glm::vec3> rgb_colors;
 };
 
-class IVPTextured {
+class IVPTextured { // IVPT
   public:
     IVPTextured(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
-                std::vector<glm::vec2> texture_coordinates, const std::string &texture = "")
+                std::vector<glm::vec2> texture_coordinates, const std::string &texture = "",
+                int id = GlobalUIDGenerator::get_id())
         : indices(indices), xyz_positions(xyz_positions), texture_coordinates(texture_coordinates),
-          texture_path(texture) {};
+          texture_path(texture), id(id) {};
+    // TODO: remove this just make a new class for it wrapping like the tig
     Transform transform;
+    int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> texture_coordinates;
     std::string texture_path;
 };
 
-// with normals
-class IVPNTextured {
+class IVPNTextured { // IVP Normals
   public:
     IVPNTextured(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                  std::vector<glm::vec3> normals, std::vector<glm::vec2> texture_coordinates,
@@ -59,17 +65,19 @@ class IVPNTextured {
     std::string texture_path;
 };
 
-class IVPTexturePacked {
+class IVPTexturePacked { // IVPTP
   public:
     IVPTexturePacked(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                      std::vector<glm::vec2> original_texture_coordinates,
                      std::vector<glm::vec2> packed_texture_coordinates, int packed_texture_index,
-                     int packed_texture_bounding_box_index, const std::string &texture)
+                     int packed_texture_bounding_box_index, const std::string &texture,
+                     int id = GlobalUIDGenerator::get_id())
         : indices(indices), xyz_positions(xyz_positions), original_texture_coordinates(original_texture_coordinates),
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
-          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture) {};
+          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id) {};
+    // TODO: remove these instead rely on TransformedIVPTPGroup, do this change later
     Transform transform;
-    int id = UniqueIDGenerator::generate();
+    int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> original_texture_coordinates;
@@ -79,15 +87,17 @@ class IVPTexturePacked {
     std::string texture_path;
 };
 
-class IVPTPModel {
+// TODO: batcher_draw_info_integration
+class TransformedIVPTPGroup { // TIG
   public:
-    IVPTPModel() {}
-    IVPTPModel(std::vector<IVPTexturePacked> ivptp) : ivptp(std::move(ivptp)) {}
-    std::vector<IVPTexturePacked> ivptp;
+    TransformedIVPTPGroup() {}
+    TransformedIVPTPGroup(std::vector<IVPTexturePacked> ivptp, int id) : ivptps(std::move(ivptp)), id(id) {}
+    int id;
+    std::vector<IVPTexturePacked> ivptps;
     Transform transform;
 };
 
-class IVPNTexturePacked {
+class IVPNTexturePacked { // IVPTP
   public:
     IVPNTexturePacked(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                       std::vector<glm::vec3> normals, std::vector<glm::vec2> original_texture_coordinates,
@@ -98,7 +108,7 @@ class IVPNTexturePacked {
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
           packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture) {};
     Transform transform;
-    int id = UniqueIDGenerator::generate();
+    int id = GlobalUIDGenerator::get_id();
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
