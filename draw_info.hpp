@@ -11,11 +11,30 @@ namespace draw_info {
 class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() {};
-    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions)
-        : indices(indices), xyz_positions(xyz_positions) {};
+    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
+                           int id = GlobalUIDGenerator::get_id())
+        : indices(indices), xyz_positions(xyz_positions), id(id) {};
     Transform transform;
+    int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
+
+    friend std::ostream &operator<<(std::ostream &os, const IndexedVertexPositions &ivp) {
+        os << "IndexedVertexPositions("
+           << "indices.size=" << ivp.indices.size() << ", "
+           << "xyz_positions.size=" << ivp.xyz_positions.size() << ", "
+           << "transform=" << ivp.transform << ")";
+        return os;
+    }
+};
+
+class TransformedIVPGroup { // TIG
+  public:
+    TransformedIVPGroup() {}
+    TransformedIVPGroup(std::vector<IndexedVertexPositions> ivps, int id) : ivps(std::move(ivps)), id(id) {}
+    int id;
+    std::vector<IndexedVertexPositions> ivps;
+    Transform transform;
 };
 
 class IVPSolidColor { // IVPSC
