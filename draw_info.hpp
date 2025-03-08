@@ -114,6 +114,13 @@ class TransformedIVPTPGroup { // TIG
     int id;
     std::vector<IVPTexturePacked> ivptps;
     Transform transform;
+
+    void regenerate_ids(IDGenerator &tig_id_generator, IDGenerator &ivptp_id_generator) {
+        id = tig_id_generator.get_id();
+        for (auto &ivptp : ivptps) {
+            ivptp.id = ivptp_id_generator.get_id();
+        }
+    }
 };
 
 class IVPNTexturePacked { // IVPTP
