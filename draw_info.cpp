@@ -36,4 +36,24 @@ extract_indexed_vertex_positions_vector(const std::vector<IVPTexturePacked> &ivp
     return result;
 }
 
+void VertexBoneData::add_bone_data(unsigned int BoneID, float Weight) {
+    for (unsigned int i = 0; i < 4; i++) {
+        if (weight_value_of_this_vertex_wrt_bone[i] == 0.0) {
+            indices_of_bones_that_affect_this_vertex[i] = BoneID;
+            weight_value_of_this_vertex_wrt_bone[i] = Weight;
+            /*std::cout << "Bone ID " << BoneID << " weight " << Weight << " stored at local index " << i <<
+             * std::endl;*/
+            return;
+        }
+    }
+
+    bool logging = false;
+    if (logging) {
+        std::cout << "was about to add bone data, but we've already associated 4 weights, not adding" << std::endl;
+    }
+    /*assert(false); // Should never get here if we have enough space for bones, otherwise we need to increment the
+     * num*/
+    /*// bones count*/
+}
+
 } // namespace draw_info
