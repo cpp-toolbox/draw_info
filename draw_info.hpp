@@ -216,6 +216,7 @@ struct BoneInfo {
     // z) and then we have a vertex at (x, y + 1, z + 1) then its new position becomes (0, 1, 1) that is it is
     // positioned relative to the bones origin
     glm::mat4 local_space_to_bone_space_in_bind_pose_transformation;
+    // this transoformation takes a vertex in local space, and moves it to its animated position in local space
     glm::mat4 local_space_animated_transform_upto_this_bone = glm::mat4(0);
 
     BoneInfo(const glm::mat4 &lstbst) { local_space_to_bone_space_in_bind_pose_transformation = lstbst; }
