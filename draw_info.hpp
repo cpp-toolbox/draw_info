@@ -89,16 +89,27 @@ class IVPTexturePacked { // IVPTP
     IVPTexturePacked(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                      std::vector<glm::vec2> original_texture_coordinates,
                      std::vector<glm::vec2> packed_texture_coordinates, int packed_texture_index,
-                     int packed_texture_bounding_box_index, const std::string &texture,
-                     int id = GlobalUIDGenerator::get_id())
+                     int packed_texture_bounding_box_index, const std::string &texture, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), original_texture_coordinates(original_texture_coordinates),
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
           packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id) {};
+
+    IVPTexturePacked(const IndexedVertexPositions &ivp, std::vector<glm::vec2> original_texture_coordinates,
+                     std::vector<glm::vec2> packed_texture_coordinates, int packed_texture_index,
+                     int packed_texture_bounding_box_index, const std::string &texture,
+                     int id = GlobalUIDGenerator::get_id())
+        : indices(ivp.indices), xyz_positions(ivp.xyz_positions),
+          original_texture_coordinates(original_texture_coordinates),
+          packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
+          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id) {};
+
     // TODO: remove these instead rely on TransformedIVPTPGroup, do this change later
     Transform transform;
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
+    // NOTE: the reason these exists is sometimes the packed textures change mid game and then you would have to
+    // recmopute the packed texture coordinates, and these will be used for that purpose
     std::vector<glm::vec2> original_texture_coordinates;
     std::vector<glm::vec2> packed_texture_coordinates;
     int packed_texture_index;
