@@ -40,6 +40,11 @@ class TransformedIVPGroup { // TIG
 class IVPSolidColor { // IVPSC
   public:
     IVPSolidColor() {};
+
+    IVPSolidColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors,
+                  int id = GlobalUIDGenerator::get_id())
+        : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id) {};
+
     IVPSolidColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                   std::vector<glm::vec3> rgb_colors, int id = GlobalUIDGenerator::get_id())
         : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id) {};
@@ -49,7 +54,6 @@ class IVPSolidColor { // IVPSC
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
-    std::vector<glm::vec2> texture_coordinates;
     std::vector<glm::vec3> rgb_colors;
 };
 
