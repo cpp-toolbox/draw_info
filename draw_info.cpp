@@ -2,6 +2,8 @@
 
 namespace draw_info {
 
+IndexedVertexPositions ivpn_to_ivpn(const IVPNormals &ivpn) { return {ivpn.indices, ivpn.xyz_positions, ivpn.id}; }
+
 IndexedVertexPositions extract_indexed_vertex_positions(const IVPTextured &ivp_textured) {
     return IndexedVertexPositions(ivp_textured.indices, ivp_textured.xyz_positions);
 }

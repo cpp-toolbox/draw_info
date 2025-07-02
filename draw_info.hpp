@@ -28,6 +28,30 @@ class IndexedVertexPositions { // IVP
     }
 };
 
+class IVPNormals { // IVP with normals
+  public:
+    IVPNormals() {};
+    IVPNormals(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
+               int id = -1)
+        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
+    Transform transform;
+    int id;
+    std::vector<unsigned int> indices;
+    std::vector<glm::vec3> xyz_positions;
+    std::vector<glm::vec3> normals;
+
+    friend std::ostream &operator<<(std::ostream &os, const IVPNormals &ivp) {
+        os << "IndexedVertexPositions("
+           << "indices.size=" << ivp.indices.size() << ", "
+           << "xyz_positions.size=" << ivp.xyz_positions.size() << ", "
+           << "normals.size=" << ivp.normals.size() << ", "
+           << "transform=" << ivp.transform << ")";
+        return os;
+    }
+};
+
+IndexedVertexPositions ivpn_to_ivpn(const IVPNormals &ivpn);
+
 class TransformedIVPGroup { // TIG
   public:
     TransformedIVPGroup() {}
@@ -55,6 +79,35 @@ class IVPSolidColor { // IVPSC
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> rgb_colors;
+};
+
+class IVPNColored {
+  public:
+    IVPNColored(IVPNormals ivpn, glm::vec3 color)
+        : IVPNColored(ivpn, std::vector<glm::vec3>(ivpn.xyz_positions.size(), color)) {}
+
+    IVPNColored(IVPNormals ivpn, std::vector<glm::vec3> colors)
+        : transform(ivpn.transform), indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), normals(ivpn.normals),
+          id(ivpn.id), colors(colors) {};
+    IVPNColored(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
+                std::vector<glm::vec3> colors, int id = -1)
+        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
+    Transform transform;
+    int id;
+    std::vector<unsigned int> indices;
+    std::vector<glm::vec3> xyz_positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colors;
+
+    friend std::ostream &operator<<(std::ostream &os, const IVPNColored &ivp) {
+        os << "IndexedVertexPositions("
+           << "indices.size=" << ivp.indices.size() << ", "
+           << "xyz_positions.size=" << ivp.xyz_positions.size() << ", "
+           << "normals.size=" << ivp.normals.size() << ", "
+           << "colors.size=" << ivp.colors.size() << ", "
+           << "transform=" << ivp.transform << ")";
+        return os;
+    }
 };
 
 class IVPTextured { // IVPT
