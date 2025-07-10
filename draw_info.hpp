@@ -14,6 +14,7 @@ class IndexedVertexPositions { // IVP
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                            int id = GlobalUIDGenerator::get_id())
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
+
     Transform transform;
     int id;
     std::vector<unsigned int> indices;
@@ -61,16 +62,16 @@ class TransformedIVPGroup { // TIG
     Transform transform;
 };
 
-class IVPSolidColor { // IVPSC
+class IVPColor { // IVPSC
   public:
-    IVPSolidColor() {};
+    IVPColor() {};
 
-    IVPSolidColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors,
-                  int id = GlobalUIDGenerator::get_id())
+    IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors,
+             int id = GlobalUIDGenerator::get_id())
         : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id) {};
 
-    IVPSolidColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
-                  std::vector<glm::vec3> rgb_colors, int id = GlobalUIDGenerator::get_id())
+    IVPColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> rgb_colors,
+             int id = GlobalUIDGenerator::get_id())
         : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id) {};
 
     // TODO: remove
@@ -81,30 +82,30 @@ class IVPSolidColor { // IVPSC
     std::vector<glm::vec3> rgb_colors;
 };
 
-class IVPNColored {
+class IVPNColor {
   public:
-    IVPNColored(IVPNormals ivpn, glm::vec3 color)
-        : IVPNColored(ivpn, std::vector<glm::vec3>(ivpn.xyz_positions.size(), color)) {}
+    IVPNColor(IVPNormals ivpn, glm::vec3 color)
+        : IVPNColor(ivpn, std::vector<glm::vec3>(ivpn.xyz_positions.size(), color)) {}
 
-    IVPNColored(IVPNormals ivpn, std::vector<glm::vec3> colors)
+    IVPNColor(IVPNormals ivpn, std::vector<glm::vec3> rgb_colors)
         : transform(ivpn.transform), indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), normals(ivpn.normals),
-          id(ivpn.id), colors(colors) {};
-    IVPNColored(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
-                std::vector<glm::vec3> colors, int id = -1)
+          id(ivpn.id), rgb_colors(rgb_colors) {};
+    IVPNColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
+              std::vector<glm::vec3> colors, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
     Transform transform;
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
-    std::vector<glm::vec3> colors;
+    std::vector<glm::vec3> rgb_colors;
 
-    friend std::ostream &operator<<(std::ostream &os, const IVPNColored &ivp) {
+    friend std::ostream &operator<<(std::ostream &os, const IVPNColor &ivp) {
         os << "IndexedVertexPositions("
            << "indices.size=" << ivp.indices.size() << ", "
            << "xyz_positions.size=" << ivp.xyz_positions.size() << ", "
            << "normals.size=" << ivp.normals.size() << ", "
-           << "colors.size=" << ivp.colors.size() << ", "
+           << "rgb_colors.size=" << ivp.rgb_colors.size() << ", "
            << "transform=" << ivp.transform << ")";
         return os;
     }
