@@ -66,6 +66,9 @@ class IVPColor { // IVPSC
   public:
     IVPColor() {};
 
+    IVPColor(draw_info::IndexedVertexPositions ivp, glm::vec3 color)
+        : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color)) {}
+
     IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors,
              int id = GlobalUIDGenerator::get_id())
         : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id) {};
