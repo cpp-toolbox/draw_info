@@ -11,8 +11,7 @@ namespace draw_info {
 class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() {};
-    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
-                           int id = GlobalUIDGenerator::get_id())
+    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
 
     Transform transform;
@@ -67,14 +66,13 @@ class IVPColor { // IVPSC
     IVPColor() {};
 
     IVPColor(draw_info::IndexedVertexPositions ivp, glm::vec3 color)
-        : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color)) {}
+        : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color), ivp.id) {}
 
-    IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors,
-             int id = GlobalUIDGenerator::get_id())
+    IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors, int id = -1)
         : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id) {};
 
     IVPColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> rgb_colors,
-             int id = GlobalUIDGenerator::get_id())
+             int id = -1)
         : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id) {};
 
     // TODO: remove
