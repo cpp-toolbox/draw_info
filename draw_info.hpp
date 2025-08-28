@@ -6,11 +6,58 @@
 #include <vector>
 #include "sbpt_generated_includes.hpp"
 
+// NOTE: draw info is a namespace containing representations of data that eventually will land on the GPU
 namespace draw_info {
+
+template <typename T>
+concept IVPLike = requires(T t) {
+    // Must have these data members
+    { t.xyz_positions } -> std::convertible_to<std::vector<glm::vec3>>;
+    { t.indices } -> std::convertible_to<std::vector<unsigned int>>;
+
+    { t.transform };
+    { t.buffer_modification_tracker };
+};
+
+// NOTE: for every draw info object, we only ever create one if we want to draw it to the screen, additionally something
+// can only get drawn to the screen if its geometry gets buffered onto the graphics card. In the client code we provide
+// this class that keeps track of if we've modified the draw info class on the cpu side of things, then while rendering
+// we can check this flag and then rebuffer the "dirty" information automatically.
+class BufferModificationTracker {
+  public:
+    void just_modified() { has_been_modified_since_last_buffered_ = true; }
+    void just_buffered_data() {
+        has_data_in_buffer_ = true;
+        has_been_modified_since_last_buffered_ = false;
+    }
+
+    void free_buffered_data() { has_data_in_buffer_ = false; }
+    bool has_data_in_buffer() { return has_data_in_buffer_; }
+
+    bool has_been_modified_since_last_buffering() const {
+        if (has_data_in_buffer_) {
+            return has_been_modified_since_last_buffered_;
+        } else {
+            // NOTE: if there's no data in the buffer yet, then it has not been modified since last buffering because
+            // there was no last buffering.
+            return false;
+        }
+    }
+    std::string to_string() const {
+        return "BufferModificationTracker { " + std::string("has_data_in_buffer = ") +
+               (has_data_in_buffer_ ? "true" : "false") + ", " +
+               std::string("has_been_modified_since_last_buffered_ = ") +
+               (has_been_modified_since_last_buffered_ ? "true" : "false") + " }";
+    }
+
+  private:
+    bool has_data_in_buffer_ = false;
+    bool has_been_modified_since_last_buffered_ = false;
+};
 
 class IndexedVertexPositions { // IVP
   public:
-    IndexedVertexPositions() {};
+    IndexedVertexPositions() : id(-1) {};
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
 
@@ -18,6 +65,8 @@ class IndexedVertexPositions { // IVP
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
+
+    BufferModificationTracker buffer_modification_tracker;
 
     friend std::ostream &operator<<(std::ostream &os, const IndexedVertexPositions &ivp) {
         os << "IndexedVertexPositions("
@@ -30,7 +79,7 @@ class IndexedVertexPositions { // IVP
 
 class IVPNormals { // IVP with normals
   public:
-    IVPNormals() {};
+    IVPNormals() : id(-1) {};
     IVPNormals(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
                int id = -1)
         : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
@@ -39,6 +88,8 @@ class IVPNormals { // IVP with normals
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
+
+    BufferModificationTracker buffer_modification_tracker;
 
     friend std::ostream &operator<<(std::ostream &os, const IVPNormals &ivp) {
         os << "IndexedVertexPositions("
@@ -63,7 +114,7 @@ class TransformedIVPGroup { // TIG
 
 class IVPColor { // IVPSC
   public:
-    IVPColor() {};
+    IVPColor() : id(-1) {};
 
     IVPColor(draw_info::IndexedVertexPositions ivp, glm::vec3 color)
         : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color), ivp.id) {}
@@ -81,6 +132,8 @@ class IVPColor { // IVPSC
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> rgb_colors;
+
+    BufferModificationTracker buffer_modification_tracker;
 };
 
 class IVPNColor {
@@ -100,6 +153,8 @@ class IVPNColor {
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec3> rgb_colors;
+
+    BufferModificationTracker buffer_modification_tracker;
 
     friend std::ostream &operator<<(std::ostream &os, const IVPNColor &ivp) {
         os << "IndexedVertexPositions("
@@ -126,6 +181,8 @@ class IVPTextured { // IVPT
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> texture_coordinates;
     std::string texture_path;
+
+    BufferModificationTracker buffer_modification_tracker;
 };
 
 class IVPNTextured { // IVP Normals
@@ -141,6 +198,8 @@ class IVPNTextured { // IVP Normals
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texture_coordinates;
     std::string texture_path;
+
+    BufferModificationTracker buffer_modification_tracker;
 };
 
 class IVPTexturePacked { // IVPTP
@@ -174,6 +233,8 @@ class IVPTexturePacked { // IVPTP
     int packed_texture_index;
     int packed_texture_bounding_box_index;
     std::string texture_path;
+
+    BufferModificationTracker buffer_modification_tracker;
 };
 
 // TODO: batcher_draw_info_integration
@@ -215,6 +276,8 @@ class IVPNTexturePacked { // IVPTP
     int packed_texture_index;
     int packed_texture_bounding_box_index;
     std::string texture_path;
+
+    BufferModificationTracker buffer_modification_tracker;
 };
 
 struct VertexBoneData {
@@ -271,20 +334,20 @@ struct BoneInfo {
     // that when transformations are applied it works correctly, note that it is not recursive in any sense, it
     // literally just puts it in the correct position not relative to a parent bone or anything like that
 
-    // another name for this is the inverase bind pose because the bind pose transformation takes a bone and puts it at
-    // the origin to be read for application of transformations, and this matrix is the inverse of that
+    // another name for this is the inverase bind pose because the bind pose transformation takes a bone and puts it
+    // at the origin to be read for application of transformations, and this matrix is the inverse of that
 
     // A quick thing to jog your memory could be that it "brings the bone joint back to the origin"
 
-    // Note that bones don't really exist, they only exist by the mapping of vertex to bone id's and then knowing the
-    // mapping for each bone,
+    // Note that bones don't really exist, they only exist by the mapping of vertex to bone id's and then knowing
+    // the mapping for each bone,
 
-    // Questions for myself: what is a bone tip? it just shows what the rotation and scale is visually, based on a (0,
-    // 0, 1) bone tip you can compute where the tip would be based on the scale and so on I think... but then again
-    // bones can be larger and have no scaled in them right so then what? it might just be to compute during the auto
-    // weighting process maybe check assimp if that data is stored in there if a bone is positioned at position (x, y,
-    // z) and then we have a vertex at (x, y + 1, z + 1) then its new position becomes (0, 1, 1) that is it is
-    // positioned relative to the bones origin
+    // Questions for myself: what is a bone tip? it just shows what the rotation and scale is visually, based on a
+    // (0, 0, 1) bone tip you can compute where the tip would be based on the scale and so on I think... but then
+    // again bones can be larger and have no scaled in them right so then what? it might just be to compute during
+    // the auto weighting process maybe check assimp if that data is stored in there if a bone is positioned at
+    // position (x, y, z) and then we have a vertex at (x, y + 1, z + 1) then its new position becomes (0, 1, 1)
+    // that is it is positioned relative to the bones origin
     glm::mat4 local_space_to_bone_space_in_bind_pose_transformation;
     // this transoformation takes a vertex in local space, and moves it to its animated position in local space
     glm::mat4 local_space_animated_transform_upto_this_bone = glm::mat4(0);
