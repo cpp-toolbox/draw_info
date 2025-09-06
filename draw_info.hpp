@@ -14,6 +14,7 @@ concept IVPLike = requires(T t) {
     // Must have these data members
     { t.xyz_positions } -> std::convertible_to<std::vector<glm::vec3>>;
     { t.indices } -> std::convertible_to<std::vector<unsigned int>>;
+    { t.id } -> std::convertible_to<unsigned int>;
 
     { t.transform };
     { t.buffer_modification_tracker };
