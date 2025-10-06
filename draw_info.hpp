@@ -56,11 +56,15 @@ class BufferModificationTracker {
     bool has_been_modified_since_last_buffered_ = false;
 };
 
+class IVPNormals;
+
 class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() : id(-1) {};
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
+
+    IndexedVertexPositions(const IVPNormals &ivpn);
 
     Transform transform;
     int id;
