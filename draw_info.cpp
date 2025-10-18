@@ -3,10 +3,10 @@
 namespace draw_info {
 
 IndexedVertexPositions::IndexedVertexPositions(const IVPNormals &ivpn)
-    : indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), id(ivpn.id) {}
+    : indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), id(ivpn.id), transform(ivpn.transform) {}
 
 IndexedVertexPositions::IndexedVertexPositions(const IVPColor &ivpc)
-    : indices(ivpc.indices), xyz_positions(ivpc.xyz_positions), id(ivpc.id) {}
+    : indices(ivpc.indices), xyz_positions(ivpc.xyz_positions), id(ivpc.id), transform(ivpc.transform) {}
 
 IndexedVertexPositions ivpn_to_ivpn(const IVPNormals &ivpn) { return {ivpn.indices, ivpn.xyz_positions, ivpn.id}; }
 
