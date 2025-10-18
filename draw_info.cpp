@@ -5,6 +5,9 @@ namespace draw_info {
 IndexedVertexPositions::IndexedVertexPositions(const IVPNormals &ivpn)
     : indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), id(ivpn.id) {}
 
+IndexedVertexPositions::IndexedVertexPositions(const IVPColor &ivpc)
+    : indices(ivpc.indices), xyz_positions(ivpc.xyz_positions), id(ivpc.id) {}
+
 IndexedVertexPositions ivpn_to_ivpn(const IVPNormals &ivpn) { return {ivpn.indices, ivpn.xyz_positions, ivpn.id}; }
 
 IndexedVertexPositions extract_indexed_vertex_positions(const IVPTextured &ivp_textured) {

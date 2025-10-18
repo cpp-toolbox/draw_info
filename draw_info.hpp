@@ -20,6 +20,52 @@ concept IVPLike = requires(T t) {
     { t.buffer_modification_tracker };
 };
 
+template <IVPLike T> void apply_translation(T &ivp_like) {
+    glm::vec3 translation = ivp_like.transform.get_translation();
+
+    for (auto &pos : ivp_like.xyz_positions) {
+        pos += translation;
+    }
+
+    ivp_like.transform.reset_translation();
+    ivp_like.buffer_modification_tracker.just_modified();
+}
+
+template <IVPLike T> void apply_rotation(T &ivp_like) {
+    glm::mat4 rotation_mat = ivp_like.transform.get_rotation_transform_matrix();
+
+    for (auto &pos : ivp_like.xyz_positions) {
+        glm::vec4 rotated = rotation_mat * glm::vec4(pos, 1.0f);
+        pos = glm::vec3(rotated);
+    }
+
+    ivp_like.transform.reset_rotation();
+    ivp_like.buffer_modification_tracker.just_modified();
+}
+
+template <IVPLike T> void apply_scale(T &ivp_like) {
+    glm::vec3 scale = ivp_like.transform.get_scale();
+
+    for (auto &pos : ivp_like.xyz_positions) {
+        pos *= scale;
+    }
+
+    ivp_like.transform.reset_scale();
+    ivp_like.buffer_modification_tracker.just_modified();
+}
+
+template <IVPLike T> void apply_transform(T &ivp_like) {
+    glm::mat4 transform_mat = ivp_like.transform.get_transform_matrix();
+
+    for (auto &pos : ivp_like.xyz_positions) {
+        glm::vec4 transformed = transform_mat * glm::vec4(pos, 1.0f);
+        pos = glm::vec3(transformed);
+    }
+
+    ivp_like.transform.reset();
+    ivp_like.buffer_modification_tracker.just_modified();
+}
+
 // NOTE: for every draw info object, we only ever create one if we want to draw it to the screen, additionally something
 // can only get drawn to the screen if its geometry gets buffered onto the graphics card. In the client code we provide
 // this class that keeps track of if we've modified the draw info class on the cpu side of things, then while rendering
@@ -57,6 +103,7 @@ class BufferModificationTracker {
 };
 
 class IVPNormals;
+class IVPColor;
 
 class IndexedVertexPositions { // IVP
   public:
@@ -65,6 +112,7 @@ class IndexedVertexPositions { // IVP
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
 
     IndexedVertexPositions(const IVPNormals &ivpn);
+    IndexedVertexPositions(const IVPColor &ivpc);
 
     Transform transform;
     int id;
