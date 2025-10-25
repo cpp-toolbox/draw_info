@@ -224,9 +224,9 @@ class IVPTextured { // IVPT
   public:
     IVPTextured(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                 std::vector<glm::vec2> texture_coordinates, const std::string &texture = "",
-                int id = GlobalUIDGenerator::get_id())
+                int id = GlobalUIDGenerator::get_id(), const std::string &name = "")
         : indices(indices), xyz_positions(xyz_positions), texture_coordinates(texture_coordinates),
-          texture_path(texture), id(id) {};
+          texture_path(texture), id(id), name(name) {};
     // TODO: remove this just make a new class for it wrapping like the tig
     Transform transform;
     int id;
@@ -234,6 +234,11 @@ class IVPTextured { // IVPT
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec2> texture_coordinates;
     std::string texture_path;
+
+    // NOTE: this was added because IVPTextured is what are used while mapping, while mapping we want the ability to
+    // pass custom information for a particular mesh, an easy way to get the information is to use the name of a mesh to
+    // pass this information, additionally assimp exposes this information to us for free
+    std::string name = "";
 
     BufferModificationTracker buffer_modification_tracker;
 };
