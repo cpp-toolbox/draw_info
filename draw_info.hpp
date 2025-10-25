@@ -102,17 +102,16 @@ class BufferModificationTracker {
     bool has_been_modified_since_last_buffered_ = false;
 };
 
-class IVPNormals;
-class IVPColor;
-
 class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() : id(-1) {};
     IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1)
         : indices(indices), xyz_positions(xyz_positions), id(id) {};
 
-    IndexedVertexPositions(const IVPNormals &ivpn);
-    IndexedVertexPositions(const IVPColor &ivpc);
+    template <IVPLike T>
+    IndexedVertexPositions(const T &src)
+        : indices(src.indices), xyz_positions(src.xyz_positions), id(src.id), transform(src.transform),
+          buffer_modification_tracker(src.buffer_modification_tracker) {}
 
     Transform transform;
     int id;
