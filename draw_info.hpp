@@ -6,7 +6,17 @@
 #include <vector>
 #include "sbpt_generated_includes.hpp"
 
-// NOTE: draw info is a namespace containing representations of data that eventually will land on the GPU
+/**
+ * draw info is a namespace containing representations of data that will eventually land on the GPU. These
+ * representations are held in ram/memory, and not on the graphics card immediately.
+ *
+ * The purpose of having such representations is that it allows us to modify the representations and then if changes are
+ * detected the geometry can be re-uploaded.
+ *
+ * Eventually there will be "Hollow" or "Deffered" representations which minimize the amount of ram usage for very large
+ * or complicated object, whose purpose is to just to upload to the graphics card, more on that later
+ *
+ */
 namespace draw_info {
 
 template <typename T>
@@ -15,6 +25,7 @@ concept IVPLike = requires(T t) {
     { t.xyz_positions } -> std::convertible_to<std::vector<glm::vec3>>;
     { t.indices } -> std::convertible_to<std::vector<unsigned int>>;
     { t.id } -> std::convertible_to<unsigned int>;
+    { t.name } -> std::convertible_to<std::string>;
 
     { t.transform };
     { t.buffer_modification_tracker };
@@ -105,16 +116,19 @@ class BufferModificationTracker {
 class IndexedVertexPositions { // IVP
   public:
     IndexedVertexPositions() : id(-1) {};
-    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1)
-        : indices(indices), xyz_positions(xyz_positions), id(id) {};
+    IndexedVertexPositions(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, int id = -1,
+                           const std::string &name = "")
+        : indices(indices), xyz_positions(xyz_positions), id(id), name(name) {};
 
     template <IVPLike T>
     IndexedVertexPositions(const T &src)
         : indices(src.indices), xyz_positions(src.xyz_positions), id(src.id), transform(src.transform),
-          buffer_modification_tracker(src.buffer_modification_tracker) {}
+          buffer_modification_tracker(src.buffer_modification_tracker), name(src.name) {}
 
     Transform transform;
     int id;
+    std::string name;
+
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
 
@@ -133,13 +147,14 @@ class IVPNormals { // IVP with normals
   public:
     IVPNormals() : id(-1) {};
     IVPNormals(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
-               int id = -1)
-        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
+               int id = -1, const std::string &name = "")
+        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id), name(name) {};
     Transform transform;
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
+    std::string name;
 
     BufferModificationTracker buffer_modification_tracker;
 
@@ -169,14 +184,39 @@ class IVPColor { // IVPSC
     IVPColor() : id(-1) {};
 
     IVPColor(draw_info::IndexedVertexPositions ivp, glm::vec3 color)
-        : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color), ivp.id) {}
+        : IVPColor(ivp, std::vector<glm::vec3>(ivp.xyz_positions.size(), color), ivp.id, ivp.name) {}
 
-    IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors, int id = -1)
-        : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id) {};
+    IVPColor(draw_info::IndexedVertexPositions ivp, std::vector<glm::vec3> rgb_colors, int id = -1,
+             const std::string &name = "")
+        : indices(ivp.indices), xyz_positions(ivp.xyz_positions), rgb_colors(rgb_colors), id(id), name(name) {};
 
     IVPColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> rgb_colors,
-             int id = -1)
-        : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id) {};
+             int id = -1, const std::string &name = "")
+        : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id), name(name) {};
+
+    /**
+     * we override the default copy assignment operator because we want to maintain the metadata such as the name and id
+     * of an object while allowing you to change the data that's required to upload it to the graphics card
+     *
+     * the point of doing this is so we can just set one ivpc to another and we won't mess up ids so we can successfully
+     * duplicate or copy something we just created without having to make new geometry and copy over the id of the old
+     * thing
+     *
+     * also note that the buffer modification tracker isn't copied, but it is updated
+     */
+    IVPColor &operator=(const IVPColor &other) {
+        if (this == &other)
+            return *this; // self-assignment check
+
+        // only drawing related data copied
+        indices = other.indices;
+        xyz_positions = other.xyz_positions;
+        rgb_colors = other.rgb_colors;
+
+        buffer_modification_tracker.just_modified();
+
+        return *this;
+    }
 
     // TODO: remove
     Transform transform;
@@ -184,6 +224,7 @@ class IVPColor { // IVPSC
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> rgb_colors;
+    std::string name;
 
     BufferModificationTracker buffer_modification_tracker;
 };
@@ -197,14 +238,15 @@ class IVPNColor {
         : transform(ivpn.transform), indices(ivpn.indices), xyz_positions(ivpn.xyz_positions), normals(ivpn.normals),
           id(ivpn.id), rgb_colors(rgb_colors) {};
     IVPNColor(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions, std::vector<glm::vec3> normals,
-              std::vector<glm::vec3> colors, int id = -1)
-        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id) {};
+              std::vector<glm::vec3> colors, int id = -1, const std::string &name = "")
+        : indices(indices), xyz_positions(xyz_positions), normals(normals), id(id), name(name) {};
     Transform transform;
     int id;
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> xyz_positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec3> rgb_colors;
+    std::string name;
 
     BufferModificationTracker buffer_modification_tracker;
 
@@ -264,19 +306,22 @@ class IVPTexturePacked { // IVPTP
     IVPTexturePacked(std::vector<unsigned int> indices, std::vector<glm::vec3> xyz_positions,
                      std::vector<glm::vec2> original_texture_coordinates,
                      std::vector<glm::vec2> packed_texture_coordinates, int packed_texture_index,
-                     int packed_texture_bounding_box_index, const std::string &texture, int id = -1)
+                     int packed_texture_bounding_box_index, const std::string &texture, int id = -1,
+                     const std::string &name = "")
         : indices(indices), xyz_positions(xyz_positions), original_texture_coordinates(original_texture_coordinates),
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
-          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id) {};
+          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id),
+          name(name) {};
 
     IVPTexturePacked(const IndexedVertexPositions &ivp, std::vector<glm::vec2> original_texture_coordinates,
                      std::vector<glm::vec2> packed_texture_coordinates, int packed_texture_index,
                      int packed_texture_bounding_box_index, const std::string &texture,
-                     int id = GlobalUIDGenerator::get_id())
+                     int id = GlobalUIDGenerator::get_id(), const std::string &name = "")
         : indices(ivp.indices), xyz_positions(ivp.xyz_positions),
           original_texture_coordinates(original_texture_coordinates),
           packed_texture_coordinates(packed_texture_coordinates), packed_texture_index(packed_texture_index),
-          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id) {};
+          packed_texture_bounding_box_index(packed_texture_bounding_box_index), texture_path(texture), id(id),
+          name(name) {};
 
     // TODO: remove these instead rely on TransformedIVPTPGroup, do this change later
     Transform transform;
@@ -290,6 +335,9 @@ class IVPTexturePacked { // IVPTP
     int packed_texture_index;
     int packed_texture_bounding_box_index;
     std::string texture_path;
+
+    // TODO: needs to be set during import
+    std::string name;
 
     BufferModificationTracker buffer_modification_tracker;
 };
