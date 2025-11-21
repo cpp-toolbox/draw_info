@@ -110,8 +110,13 @@ class BufferModificationTracker {
      *
      * Should be called whenever the CPU-side data changes and needs to be reuploaded
      * to the GPU before the next render.
+     *
+     * @note if there is no data in the buffer then this does nothing
      */
-    void just_modified() { has_been_modified_since_last_buffered_ = true; }
+    void just_modified() {
+        if (has_data_in_buffer())
+            has_been_modified_since_last_buffered_ = true;
+    }
 
     /**
      * @brief Marks the data as successfully buffered to the GPU.
@@ -365,6 +370,10 @@ class TransformedIVPGroup {
  *
  * @see IndexedVertexPositions
  * @see BufferModificationTracker
+ *
+ * @todo it would be nice one day to be able to load an obj with texture and flatten those textures and then use
+ * ivpcolor instead for really fast performance.
+ *
  */
 class IVPColor { // IVPSC
   public:
