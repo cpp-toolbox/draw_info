@@ -408,7 +408,7 @@ class IVPColor { // IVPSC
         : indices(indices), xyz_positions(xyz_positions), rgb_colors(rgb_colors), id(id), name(name) {};
 
     void copy_draw_data_from(const IVPColor &other) {
-        LogSection _(global_logger, "ivpc copy constructor", logging_enabled);
+        LogSection _(*global_logger, "ivpc copy constructor", logging_enabled);
         if (this == &other)
             return;
 
