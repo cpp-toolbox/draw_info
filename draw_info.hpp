@@ -334,13 +334,20 @@ IndexedVertexPositions ivpn_to_ivpn(const IVPNormals &ivpn);
  * The `TransformedIVPGroup` (TIG) class groups together multiple
  * `IndexedVertexPositions` (IVP) objects that are transformed collectively using a single
  * `Transform`. This is useful when several pieces of geometry should move, rotate,
- * or scale together — for example, parts of a model that form a single logical object.
+ * or scale together
+ *
+ * For example: parts of a model that form a single logical object.
+ * - car with person inside it
+ * - an imported mesh that's composed of many pieces
  *
  * The group itself does not define how rendering occurs; rather, it serves as a convenient
  * container for organizing and managing related drawable components under one transform.
  *
  * @note Each contained `IndexedVertexPositions` object may still have its own internal
  * transform or buffer modification tracker.
+ *
+ * @note think if this grouping concept is just generalizable to an id based system where ids are passed out and the
+ * fact that multiple can share is just like shared ptr
  *
  * @see IndexedVertexPositions
  * @see Transform
@@ -444,6 +451,16 @@ class IVPColor { // IVPSC
 
     BufferModificationTracker buffer_modification_tracker;
 };
+
+class TransformedIVPCGroup {
+  public:
+    TransformedIVPCGroup() {}
+    TransformedIVPCGroup(std::vector<IVPColor> ivpcs, int id) : ivpcs(std::move(ivpcs)), id(id) {}
+    int id;
+    std::vector<IVPColor> ivpcs;
+    Transform transform;
+};
+
 /**
  * @brief Represents an indexed mesh with normals and per-vertex color data.
  *
