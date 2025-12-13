@@ -34,11 +34,11 @@ namespace draw_info {
 
 template <typename T>
 concept IVPLike = requires(T t) {
-    // Must have these data members
-    { t.xyz_positions } -> std::convertible_to<std::vector<glm::vec3>>;
-    { t.indices } -> std::convertible_to<std::vector<unsigned int>>;
-    { t.id } -> std::convertible_to<unsigned int>;
-    { t.name } -> std::convertible_to<std::string>;
+    // convertible to is not used because apple-clang13 doesn't have support yet
+    { t.xyz_positions };
+    { t.indices };
+    { t.id };
+    { t.name };
 
     { t.transform };
     { t.buffer_modification_tracker };
